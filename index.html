@@ -487,6 +487,8 @@ function selfCheck() {
   console.assert(l[0].lanes === 2 && l[1].lane === 1 && l[2].lanes === 1, 'layout');
   console.assert(plural(1, 'блок', 'блока', 'блоков') === 'блок' && plural(12, 'блок', 'блока', 'блоков') === 'блоков' && plural(3, 'блок', 'блока', 'блоков') === 'блока', 'plural');
   console.assert(timerText(65) === '01:05' && timerText(3725) === '1:02:05' && short('08:20') === '8:20', 'time');
+  const fake = 'ghp_' + 'a'.repeat(36);
+  console.assert(cleanToken(fake + fake) === fake && cleanToken(` ${fake}\n`) === fake && cleanToken('abc') === 'abc', 'cleanToken');
 }
 
 /* Данные живут в приватном gist. Правка сразу пишется на устройство, в gist уходит, когда есть связь. */
@@ -559,10 +561,16 @@ document.addEventListener('visibilitychange', () => (document.visibilityState ==
 addEventListener('online', syncNow);
 setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 60000);
 
+// В обоях Lively вставка может сработать дважды: берём из поля первый целый токен
+function cleanToken(raw) {
+  const t = raw.replace(/\s/g, ''), m = t.match(/ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}/);
+  return m ? m[0] : t;
+}
 async function connect(token) {
   const r = await fetch('https://api.github.com/gists?per_page=100', {cache: 'no-store', headers: headers(token)}).catch(() => null);
   if (!r) return 'Нет связи с GitHub. Проверь интернет.';
-  if (!r.ok) return 'GitHub не принял токен. Создай новый с галочкой gist.';
+  if (r.status === 401) return `GitHub не принял токен. Символов в нём: ${token.length}, у обычного токена их 40. Вставь его ещё раз или создай новый.`;
+  if (!r.ok) return `GitHub ответил ошибкой ${r.status}. Попробуй ещё раз через пару минут.`;
   const g = (await r.json()).find(x => x.files[FILE]);
   if (!g) return 'Токен рабочий, но хранилища pribor.json в твоём GitHub нет.';
   sync = {token, gist: g.id, owner: g.owner.login};
@@ -579,7 +587,14 @@ function connectForm() {
       try { localStorage.removeItem(SYNC); } catch {}
       render();
     }} : null,
-    onSave: v => (v.token.trim() ? connect(v.token.trim()) : 'Вставь токен.'),
+    onSave: async v => {
+      const token = cleanToken(v.token);
+      if (!token) return 'Вставь токен.';
+      const err = await connect(token);
+      // Новая вставка не должна дописаться к старому значению
+      if (err) $('f-token').value = '';
+      return err;
+    },
   });
 }
 function widgetCode() {
