@@ -63,7 +63,7 @@ h1,h2,h3,p{margin:0}
 .sq{width:44px;height:44px;flex:none;border-radius:6px;background:var(--raise);font-size:20px;font-weight:700}
 .sq.add{background:var(--flood);font-size:24px}
 .pill{height:44px;padding:0 12px;border-radius:6px;background:var(--raise);font-weight:600}
-#swipe{flex:1;min-height:0;display:flex;flex-direction:column;touch-action:pan-y}
+#swipe{flex:1;min-height:0;display:flex;flex-direction:column;touch-action:pan-y;overflow:hidden}
 #rows{position:relative;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:2px;overscroll-behavior:contain}
 .r{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;gap:6px;flex:none;border-radius:6px}
 .r-open{display:grid;grid-template-columns:104px minmax(0,1fr);align-items:center;gap:8px;min-height:56px;padding:3px 8px;text-align:left}
@@ -987,6 +987,7 @@ $('nextDay').onclick = () => go(addDays(sel, 1));
 $('quick').onclick = () => { const t = ymd(new Date()); go(sel === t ? addDays(t, 1) : t); };
 $('add').onclick = () => blockForm(sel, null);
 
+$('rows').addEventListener('animationend', e => e.currentTarget.classList.remove('slide-n', 'slide-p'));
 $('rows').addEventListener('click', e => {
   const tick = e.target.closest('[data-tick]');
   if (tick) return toggle(sel, tick.dataset.tick);
