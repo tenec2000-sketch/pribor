@@ -17,7 +17,7 @@
   --k-people:#7A45E6; --k-task:#2A4673; --k-class:#1A2152; --k-duty:#141A3A;
   --display:"Sofia Sans Extra Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"Sofia Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --ppm:.78; --gutter:44px; --nav:66px;
+  --ppm:.78; --gutter:44px; --nav:66px; --taskbar:0px;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -31,7 +31,7 @@ h1,h2,h3,p{margin:0}
 
 #banner{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:30;width:min(560px,calc(100vw - 32px));background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--soft);font-size:15px}
 
-.view-day{display:grid;grid-template-columns:minmax(0,1fr) 460px;height:100dvh}
+.view-day{display:grid;grid-template-columns:minmax(0,1fr) 460px;height:calc(100dvh - var(--taskbar))}
 .hero{background:var(--flood);padding:calc(32px + env(safe-area-inset-top,0px)) 44px 32px;padding-left:max(44px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;justify-content:space-between;gap:16px;min-width:0;min-height:0;transition:background .25s}
 .hero-top{display:flex;justify-content:space-between;align-items:baseline;gap:24px;font-size:22px;color:var(--soft)}
 #heroKick{font-size:22px;color:var(--soft)}
@@ -95,11 +95,11 @@ h1,h2,h3,p{margin:0}
 #cells i.miss{border-color:var(--red)}
 #cells i.now{background:var(--k-code);border-color:var(--k-code)}
 
-.tabs{position:fixed;right:20px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:420px;z-index:8;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:var(--night);border-radius:8px}
+.tabs{position:fixed;right:20px;bottom:calc(12px + env(safe-area-inset-bottom,0px) + var(--taskbar));width:420px;z-index:8;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:var(--night);border-radius:8px}
 .tabs button{height:44px;border-radius:6px;color:var(--dim);font-weight:600}
 .tabs button[aria-current="true"]{background:var(--raise);color:var(--ink)}
 
-.page{max-width:1480px;margin:0 auto;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(var(--nav) + 24px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.page{max-width:1480px;margin:0 auto;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(var(--nav) + 24px + var(--taskbar));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .bar-week{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .bar-week h2{font:800 30px/1 var(--display);margin-right:auto}
 .btn{height:44px;padding:0 14px;border-radius:6px;background:var(--raise);font-weight:600}
@@ -173,7 +173,7 @@ h1,h2,h3,p{margin:0}
 textarea,input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 10px;font-size:16px}
 #notes{min-height:120px;resize:vertical;line-height:1.45}
 
-dialog{background:var(--night);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:0;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
+dialog{background:var(--night);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:0;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px - var(--taskbar))}
 dialog::backdrop{background:rgba(5,8,28,.72)}
 #sheetForm{display:grid;gap:12px;padding:18px}
 #sheetForm h2{font:800 32px/1 var(--display)}
@@ -349,6 +349,9 @@ const EMPTY = {anchor: ANCHOR, goals: [], deadlines: [], dreams: [], notes: ''};
 
 const S = {plan: {a: {items: []}, b: {items: []}}, days: {}, settings: null, ready: false};
 let sel = ymd(new Date()), view = 'day', heroKey = '', centered = '', heroNow = null;
+
+// ?wall: страница работает обоями, панель задач перекрывает низ экрана
+if (new URLSearchParams(location.search).has('wall')) document.documentElement.style.setProperty('--taskbar', '48px');
 
 const $ = id => document.getElementById(id);
 function pad(n) { return String(n).padStart(2, '0'); }
@@ -580,7 +583,7 @@ function connectForm() {
   });
 }
 function widgetCode() {
-  return widgetSrc.replace('__RAW__', `https://gist.githubusercontent.com/${sync.owner}/${sync.gist}/raw/${FILE}`).replace('__SITE__', location.href.split('#')[0]);
+  return widgetSrc.replace('__RAW__', `https://gist.githubusercontent.com/${sync.owner}/${sync.gist}/raw/${FILE}`).replace('__SITE__', location.origin + location.pathname);
 }
 
 function dayDoc(date) {
