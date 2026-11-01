@@ -95,7 +95,7 @@ h1,h2,h3,p{margin:0}
 #cells i.miss{border-color:var(--red)}
 #cells i.now{background:var(--k-code);border-color:var(--k-code)}
 
-.tabs{position:fixed;right:20px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:420px;z-index:8;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;background:var(--night);border-radius:8px}
+.tabs{position:fixed;right:20px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:420px;z-index:8;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:var(--night);border-radius:8px}
 .tabs button{height:44px;border-radius:6px;color:var(--dim);font-weight:600}
 .tabs button[aria-current="true"]{background:var(--raise);color:var(--ink)}
 
@@ -138,6 +138,15 @@ h1,h2,h3,p{margin:0}
 .nowline{position:absolute;left:0;right:0;height:2px;background:var(--red);z-index:3;pointer-events:none}
 #empty{position:absolute;left:var(--gutter);right:0;top:64px;text-align:center;color:var(--dim);padding:0 24px;pointer-events:none}
 
+.stats{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:28px 48px;align-items:center;max-width:1100px;margin:0 auto}
+.stats-head{grid-column:1/-1;font:800 30px/1 var(--display)}
+.gauge svg{display:block;width:100%;max-width:340px;margin:0 auto;height:auto}
+#needle{transition:transform .7s cubic-bezier(.3,1.3,.5,1)}
+.g-num{font:800 16px var(--display);fill:var(--dim)}
+.g-read{font:800 34px var(--display);fill:var(--ink)}
+.g-sub{font:400 14px var(--body);fill:var(--dim)}
+.g-sub.bad{fill:var(--red)}
+.stats-side{display:grid;gap:16px;min-width:0}
 .info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 40px;align-items:start;max-width:1100px}
 .info section{min-width:0;display:grid;gap:8px}
 .info h2{font:800 30px/1 var(--display)}
@@ -149,7 +158,8 @@ h1,h2,h3,p{margin:0}
 .seg i{position:absolute;inset:0 auto 0 0;background:#7FB0FF}
 .bar.over .seg i{background:var(--red)}
 .bar.over .bar-top span:last-child{color:var(--red)}
-.screen{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--dim)}
+.screen{display:flex;align-items:center;gap:10px;color:var(--dim)}
+.screen span{flex:1;min-width:0}
 .screen output{min-width:48px;text-align:center;color:var(--ink);font-variant-numeric:tabular-nums}
 .step{width:44px;height:44px;border-radius:50%;background:var(--raise);font-size:20px}
 .rows{display:grid;gap:2px}
@@ -208,12 +218,12 @@ fieldset.f{border:0;margin:0;padding:0}
   .r-time{font-size:14px}
   .r-text b{font-size:17px}
   .tabs{left:0;right:0;bottom:0;width:auto;border-radius:0;border-top:1px solid var(--line);padding:6px max(14px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));gap:0}
-  .info{grid-template-columns:minmax(0,1fr)}
+  .info,.stats{grid-template-columns:minmax(0,1fr)}
   dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:14px 14px 0 0;border-width:1px 0 0;max-height:88dvh}
   #sheetForm{padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
   #toast{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 }
-@media (prefers-reduced-motion:reduce){.hero{transition:none}.slide-n,.slide-p{animation:none}}
+@media (prefers-reduced-motion:reduce){.hero,#needle{transition:none}.slide-n,.slide-p{animation:none}}
 </style>
 </head>
 <body>
@@ -266,10 +276,11 @@ fieldset.f{border:0;margin:0;padding:0}
   <div class="week-scroll"><div class="week-in"><div id="head"></div><div id="cols"></div></div></div>
 </section>
 
-<section id="infoView" class="page" aria-label="Важное" hidden>
-  <div class="info">
-    <section>
-      <h2>Цифры месяца</h2>
+<section id="statsView" class="page" aria-label="Приборы" hidden>
+  <div class="stats">
+    <h2 class="stats-head" id="gRange"></h2>
+    <div class="gauge" id="gauge"></div>
+    <div class="stats-side">
       <div class="bars" id="bars"></div>
       <div class="screen">
         <span>Сериалы и манхва сегодня</span>
@@ -277,7 +288,12 @@ fieldset.f{border:0;margin:0;padding:0}
         <output id="scrVal">0 ч</output>
         <button type="button" class="step" id="scrPlus" aria-label="Добавить полчаса">+</button>
       </div>
-    </section>
+    </div>
+  </div>
+</section>
+
+<section id="infoView" class="page" aria-label="Важное" hidden>
+  <div class="info">
     <section>
       <h2>Сроки</h2>
       <div class="rows" id="deadlines"></div>
@@ -308,6 +324,7 @@ fieldset.f{border:0;margin:0;padding:0}
 <nav class="tabs" aria-label="Разделы">
   <button type="button" data-go="day" aria-current="true">День</button>
   <button type="button" data-go="week">Неделя</button>
+  <button type="button" data-go="stats">Приборы</button>
   <button type="button" data-go="info">Важное</button>
 </nav>
 
@@ -754,10 +771,12 @@ function setView(v) {
   view = v;
   $('dayView').hidden = v !== 'day';
   $('weekView').hidden = v !== 'week';
+  $('statsView').hidden = v !== 'stats';
   $('infoView').hidden = v !== 'info';
   document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.go === v));
   scrollTo(0, 0);
   if (v === 'day') { render(); centerStrip(false); }
+  if (v === 'stats') sweepGauge();
 }
 
 /* Неделя */
@@ -790,7 +809,57 @@ function renderWeek() {
   $('range').textContent = `${fmt(m, {day: 'numeric', month: 'long'})} – ${fmt(addDays(m, 6), {day: 'numeric', month: 'long'})}`;
 }
 
-/* Важное */
+/* Приборы */
+function buildGauge(n) {
+  const c = 130, pol = (p, r) => { const a = (135 + 270 * p) * Math.PI / 180; return [c + r * Math.cos(a), c + r * Math.sin(a)]; };
+  const arc = (p0, p1, r) => { const [x0, y0] = pol(p0, r), [x1, y1] = pol(p1, r); return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 ${(p1 - p0) * 270 > 180 ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`; };
+  buildGauge.arc = arc;
+  let ticks = '';
+  const step = Math.max(1, Math.ceil(n / 8));
+  for (let i = 0; i <= n; i++) {
+    const p = n ? i / n : 0, major = i % step === 0, [x0, y0] = pol(p, major ? 104 : 109), [x1, y1] = pol(p, 116), [tx, ty] = pol(p, 90);
+    ticks += `<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="var(--soft)" stroke-width="${major ? 2.5 : 1.5}"/>`;
+    if (major) ticks += `<text class="g-num" x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle" dominant-baseline="central">${i}</text>`;
+  }
+  const [nx, ny] = pol(0, 100), [tx, ty] = pol(0, -16);
+  $('gauge').innerHTML = `<svg viewBox="0 0 260 244" role="img" aria-labelledby="gLabel"><title id="gLabel"></title>
+    <path d="${arc(0, 1, 118)}" fill="none" stroke="var(--line)" stroke-width="3"/>
+    <path id="gFill" fill="none" stroke="#7FB0FF" stroke-width="6"/>
+    <path id="gBehind" fill="none" stroke="var(--red)" stroke-width="6"/>
+    ${ticks}
+    <g id="needle" style="transform-origin:130px 130px"><line x1="${tx.toFixed(1)}" y1="${ty.toFixed(1)}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/></g>
+    <circle cx="130" cy="130" r="9" fill="var(--raise)" stroke="var(--line)"/>
+    <text id="gRead" class="g-read" x="130" y="198" text-anchor="middle"></text>
+    <text id="gSub" class="g-sub" x="130" y="220" text-anchor="middle"></text>
+  </svg>`;
+}
+function setNeedle(p) { const e = $('needle'); if (e) e.style.transform = `rotate(${270 * p}deg)`; }
+
+let gTotal = -1, swept = false, sweeping = false;
+function renderGauge() {
+  const w = weekStats(sel), m = monday(sel), since = cfg().since || '';
+  if (w.total !== gTotal) { gTotal = w.total; buildGauge(w.total); }
+  const p = w.total ? Math.min(1, w.done / w.total) : 0, q = w.total ? Math.min(1, w.due / w.total) : 0;
+  const arc = buildGauge.arc;
+  $('gRange').textContent = `Неделя ${fmt(m, {day: 'numeric', month: 'long'})} – ${fmt(addDays(m, 6), {day: 'numeric', month: 'long'})}`;
+  $('gFill').setAttribute('d', p > 0 ? arc(0, p, 118) : '');
+  $('gBehind').setAttribute('d', q > p ? arc(p, q, 118) : '');
+  $('gRead').textContent = `${w.done} из ${w.total}`;
+  const sub = $('gSub');
+  sub.classList.toggle('bad', w.behind > 0);
+  sub.textContent = !w.total ? (addDays(m, 6) < since ? `План стартует ${fmt(since, {day: 'numeric', month: 'long'})}` : 'На неделе нет блоков') : w.behind ? `Отстаёшь на ${w.behind} ${plural(w.behind, 'блок', 'блока', 'блоков')}` : w.done === w.total ? 'Неделя закрыта' : 'Идёшь по плану';
+  $('gLabel').textContent = `Закрыто ${w.done} блоков из ${w.total}. ${sub.textContent}.`;
+  if (!sweeping) setNeedle(p);
+}
+// При первом открытии стрелка делает прогазовку, как при включении зажигания
+function sweepGauge() {
+  if (swept || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  swept = sweeping = true;
+  setNeedle(0);
+  setTimeout(() => setNeedle(1), 40);
+  setTimeout(() => { sweeping = false; renderGauge(); }, 800);
+}
+
 function renderBars() {
   const r = monthStats(sel.slice(0, 7)), month = fmt(sel, {month: 'long'});
   $('bars').innerHTML = cfg().goals.map(g => {
@@ -827,6 +896,7 @@ function render() {
   renderHero();
   renderDay();
   renderWeek();
+  renderGauge();
   renderBars();
   renderSide();
 }
