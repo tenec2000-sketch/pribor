@@ -3,89 +3,123 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#050A14">
+<meta name="theme-color" content="#0A0E2A">
 <title>Приборка</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Russo+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;500;600;700&family=Sofia+Sans+Extra+Condensed:wght@700;800&display=swap">
 <style>
-/* Layout: приборная панель японской машины ночью. Сверху щиток с тахометром недели, ниже сетка недели и колонка важного. На телефоне одна колонка дня и три вкладки. */
+/* Один блок: слева заливка с таймером текущего блока, справа точное расписание выбранного дня. На телефоне они идут друг под другом. */
 :root{
-  --night:#050A14; --panel:#0A1424; --raise:#11203A; --line:#1E3252;
-  --ink:#E8F0FC; --dim:#93A9CB; --glow:#4FA8FF; --ice:#B5DBFF; --red:#FF5468;
-  --k-code:#1F6FEB; --k-english:#0A7A99; --k-edit:#4B55E0; --k-sport:#127A78;
-  --k-people:#7A45E6; --k-task:#2A4673; --k-class:#13233F; --k-duty:#0E1B31;
-  --display:"Russo One","Arial Narrow",system-ui,sans-serif;
-  --body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --ppm:.78; --gutter:44px;
+  --flood:#1A2152; --night:#0A0E2A; --panel:#101640; --raise:#1A2152; --line:#2A3266;
+  --ink:#FFFFFF; --soft:#D6DEFF; --dim:#AEB9EC; --red:#FF9C9C; --paper:#0A1A8C;
+  --k-code:#1F6FEB; --k-english:#0A7A99; --k-edit:#5A2BC2; --k-sport:#127A78;
+  --k-people:#7A45E6; --k-task:#2A4673; --k-class:#1A2152; --k-duty:#141A3A;
+  --display:"Sofia Sans Extra Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Sofia Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ppm:.78; --gutter:44px; --nav:66px;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{background:var(--night)}
-body{margin:0;background:var(--night);color:var(--ink);font:400 15px/1.45 var(--body);-webkit-text-size-adjust:100%}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
+body{margin:0;background:var(--night);color:var(--ink);font:400 16px/1.4 var(--body);-webkit-text-size-adjust:100%}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
-:focus-visible{outline:2px solid var(--ice);outline-offset:2px}
-h1,h2,p{margin:0}
-#app{max-width:1520px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(16px + env(safe-area-inset-top,0px)) 16px;display:grid;gap:16px}
+:focus-visible{outline:2px solid var(--soft);outline-offset:2px}
+h1,h2,h3,p{margin:0}
 
-#banner{background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--ice);font-size:14px}
+#banner{position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:30;width:min(560px,calc(100vw - 32px));background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--soft);font-size:15px}
 
-.cluster{display:grid;grid-template-columns:272px minmax(0,1fr) minmax(0,380px);gap:24px;align-items:center;background:radial-gradient(120% 160% at 14% 40%,#10264a 0,var(--panel) 46%,var(--night) 100%);border:1px solid var(--line);border-radius:18px;padding:16px 24px}
-.gauge svg{display:block;width:100%;max-width:272px;margin:0 auto;height:auto}
-#needle{transition:transform .7s cubic-bezier(.3,1.3,.5,1)}
-.g-num{font-family:var(--display);fill:var(--dim);font-size:13px}
-.g-read{font-family:var(--display);fill:var(--ink);font-size:26px}
-.g-sub{font-family:var(--body);fill:var(--dim);font-size:13px}
-.g-sub.bad{fill:var(--red)}
+.view-day{display:grid;grid-template-columns:minmax(0,1fr) 460px;height:100dvh}
+.hero{background:var(--flood);padding:calc(32px + env(safe-area-inset-top,0px)) 44px 32px;padding-left:max(44px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;justify-content:space-between;gap:16px;min-width:0;min-height:0;transition:background .25s}
+.hero-top{display:flex;justify-content:space-between;align-items:baseline;gap:24px;font-size:22px;color:var(--soft)}
+#heroKick{font-size:22px;color:var(--soft)}
+#heroTitle{font:800 clamp(52px,6vw,84px)/1 var(--display);overflow-wrap:anywhere}
+#timer{font:800 min(calc((100vw - 560px)/1.9),46vh)/.86 var(--display);font-variant-numeric:tabular-nums;margin-top:4px}
+#timer.long{font-size:min(calc((100vw - 560px)/2.8),36vh)}
+.hero-foot{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+#heroTask{text-align:left;font-size:27px;line-height:1.25;max-width:760px}
+#heroRule{font-size:18px;color:var(--soft)}
+.hero-acts{display:flex;gap:12px;flex-wrap:wrap}
+.act{height:56px;padding:0 26px;border-radius:6px;font-size:20px;font-weight:700}
+.act.solid{background:#FFFFFF;color:var(--paper)}
+.act.line{border:2px solid var(--soft);font-weight:600}
+.act .short{display:none}
 
-.now{display:grid;gap:6px;min-width:0}
-h1{font:400 clamp(24px,2.6vw,36px)/1.15 var(--display);text-wrap:balance}
-#weekName{color:var(--dim)}
-.line{font-size:17px;min-width:0}
-.line b{font-weight:600;color:var(--ice)}
-.screen{display:flex;align-items:center;gap:10px;margin-top:6px;color:var(--dim);flex-wrap:wrap}
-.screen output{min-width:48px;text-align:center;color:var(--ink);font-variant-numeric:tabular-nums}
-.step{width:36px;height:36px;border:1px solid var(--line);border-radius:50%;background:var(--raise);font-size:18px;line-height:1}
-.step:hover{border-color:var(--glow)}
+.sched{background:var(--night);display:flex;flex-direction:column;gap:12px;min-height:0;min-width:0;padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(var(--nav) + 8px)}
+.strip{position:relative;display:flex;gap:4px;overflow-x:auto;flex:none;scrollbar-width:none;scroll-snap-type:x proximity}
+.strip::-webkit-scrollbar{display:none}
+.chip{flex:none;width:52px;height:58px;border-radius:6px;border:2px solid var(--raise);background:var(--raise);font-size:14px;line-height:1.1;scroll-snap-align:center}
+.chip b{display:block;font:800 24px/1 var(--display)}
+.chip.wk{margin-left:10px}
+.chip.today{border-color:#FFFFFF}
+.chip.sel{background:var(--flood);border-color:var(--flood)}
+.chip.sel.today{border-color:#FFFFFF}
+.day-head{display:flex;align-items:center;gap:6px;flex:none}
+.day-name{flex:1;min-width:0}
+.day-name h2{font:800 34px/1 var(--display)}
+.day-name p{font-size:15px;color:var(--dim)}
+.sq{width:44px;height:44px;flex:none;border-radius:6px;background:var(--raise);font-size:20px;font-weight:700}
+.sq.add{background:var(--flood);font-size:24px}
+.pill{height:44px;padding:0 12px;border-radius:6px;background:var(--raise);font-weight:600}
+#swipe{flex:1;min-height:0;display:flex;flex-direction:column;touch-action:pan-y}
+#rows{position:relative;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:2px;overscroll-behavior:contain}
+.r{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;gap:6px;flex:none;border-radius:6px}
+.r-open{display:grid;grid-template-columns:104px minmax(0,1fr);align-items:center;gap:8px;min-height:56px;padding:3px 8px;text-align:left}
+.r.gap .r-open{min-height:42px}
+.r-time{font-size:16px;color:var(--dim);font-variant-numeric:tabular-nums}
+.r-text{min-width:0}
+.r-text b{display:block;font-size:19px;font-weight:700;line-height:1.15}
+.r-text small{display:block;font-size:14px;line-height:1.2;color:var(--dim)}
+.r.plain b,.r.gap b,.r.past b{font-weight:500}
+.r.past b,.r.gap b{color:var(--dim)}
+.r.now{background:var(--flood)}
+.r.now .r-time,.r.now small{color:var(--soft)}
+.r.miss small{color:var(--red)}
+.r-tick{width:44px;height:44px;border-radius:50%;border:2px solid var(--dim);color:transparent;font-size:20px;font-weight:700}
+.r.now .r-tick{border-color:var(--soft)}
+.r.miss .r-tick{border-color:var(--red)}
+.r-tick.done{background:#FFFFFF;border-color:#FFFFFF;color:var(--night)}
+.slide-n{animation:slideN .2s ease-out}
+.slide-p{animation:slideP .2s ease-out}
+@keyframes slideN{from{transform:translateX(36px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes slideP{from{transform:translateX(-36px);opacity:.3}to{transform:none;opacity:1}}
+.wk-sum{flex:none;display:grid;gap:8px}
+.wk-line{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.wk-line h3{font:800 26px/1 var(--display)}
+.wk-line span{color:var(--red)}
+#cells{display:flex;gap:5px}
+#cells i{flex:1;height:14px;border:2px solid var(--line)}
+#cells i.done{background:#FFFFFF;border-color:#FFFFFF}
+#cells i.miss{border-color:var(--red)}
+#cells i.now{background:var(--k-code);border-color:var(--k-code)}
 
-.bars{display:grid;gap:10px;min-width:0}
-.bar{display:grid;gap:4px;width:100%;text-align:left}
-.bar-top{display:flex;justify-content:space-between;gap:12px;font-size:14px}
-.bar-top span:last-child{color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
-.seg{height:10px;background:var(--raise);-webkit-mask:repeating-linear-gradient(90deg,#000 0 7px,transparent 7px 10px);mask:repeating-linear-gradient(90deg,#000 0 7px,transparent 7px 10px);position:relative}
-.seg i{position:absolute;inset:0 auto 0 0;background:var(--glow);transition:width .3s}
-.bar.over .seg i{background:var(--red)}
-.bar.over .bar-top span:last-child{color:var(--red)}
+.tabs{position:fixed;right:20px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:420px;z-index:8;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;background:var(--night);border-radius:8px}
+.tabs button{height:44px;border-radius:6px;color:var(--dim);font-weight:600}
+.tabs button[aria-current="true"]{background:var(--raise);color:var(--ink)}
 
-.main{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
-.bar-week{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
-.bar-week h2{font:600 15px/1.3 var(--body);margin-right:auto;color:var(--dim)}
-.btn{height:38px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
-.btn:hover{border-color:var(--glow)}
-.btn.main-act{background:var(--k-code);border-color:var(--k-code);color:#fff}
-.btn.icon{width:38px;padding:0}
-
-#head{display:grid;grid-template-columns:var(--gutter) repeat(7,minmax(0,1fr));position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--night);border-bottom:1px solid var(--line)}
-#head>span{display:block}
-.dh{padding:6px 2px 8px;text-align:center;border-bottom:2px solid transparent;margin-bottom:-1px;color:var(--dim);font-variant-numeric:tabular-nums}
-.dh b{display:block;font:400 18px/1.2 var(--display);color:var(--ink)}
-.dh.today b{color:var(--glow)}
-.dh.sel{border-bottom-color:var(--glow)}
-
-#cols{display:grid;grid-template-columns:var(--gutter) repeat(7,minmax(0,1fr));position:relative;background:var(--panel);border-radius:0 0 10px 10px;overflow:hidden}
+.page{max-width:1480px;margin:0 auto;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(var(--nav) + 24px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar-week{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.bar-week h2{font:800 30px/1 var(--display);margin-right:auto}
+.btn{height:44px;padding:0 14px;border-radius:6px;background:var(--raise);font-weight:600}
+.week-scroll{overflow-x:auto;border-radius:10px;background:var(--panel)}
+.week-in{min-width:980px}
+#head{display:grid;grid-template-columns:var(--gutter) repeat(7,minmax(0,1fr));border-bottom:1px solid var(--line)}
+.dh{padding:6px 2px 8px;text-align:center;color:var(--dim);font-variant-numeric:tabular-nums}
+.dh b{display:block;font:800 22px/1.1 var(--display);color:var(--ink)}
+.dh.today b{color:#7FB0FF}
+#cols{display:grid;grid-template-columns:var(--gutter) repeat(7,minmax(0,1fr));position:relative}
 .hours,.day{position:relative;height:calc(var(--ppm)*1080px)}
 .hours span{position:absolute;right:6px;transform:translateY(-50%);font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
 .hours span:first-child{transform:none}
 .day{border-left:1px solid var(--line);background-image:repeating-linear-gradient(180deg,var(--line) 0 1px,transparent 1px calc(var(--ppm)*60px))}
-.day.today{background-color:#0d1c33}
+.day.today{background-color:#141B4D}
 .b{position:absolute;min-height:28px;border-radius:6px;overflow:hidden;color:#fff;border:1px solid transparent}
 .b .open{display:flex;flex-direction:column;justify-content:flex-start;width:100%;height:100%;text-align:left;padding:3px 6px;overflow:hidden}
 .b.can .open{padding-right:30px}
 .b.can.narrow .open{padding:30px 6px 3px}
-.b strong{display:block;font-size:13px;font-weight:600;line-height:1.2;overflow-wrap:anywhere}
+.b strong{display:block;font-size:14px;font-weight:600;line-height:1.2;overflow-wrap:anywhere}
 .b span{display:block;font-size:12px;line-height:1.25;opacity:.9;font-variant-numeric:tabular-nums}
 .b.k-class{background:var(--k-class);border-color:var(--line);color:var(--ink)}
 .b.k-code{background:var(--k-code)}
@@ -96,144 +130,186 @@ h1{font:400 clamp(24px,2.6vw,36px)/1.15 var(--display);text-wrap:balance}
 .b.k-task{background:var(--k-task)}
 .b.k-duty{background:repeating-linear-gradient(135deg,var(--k-duty) 0 10px,var(--k-class) 10px 20px);border-color:var(--line);color:var(--dim)}
 .b.done{background:transparent;border:1px dashed var(--line);color:var(--dim)}
-.b.done .open{opacity:.85}
 .b.late{outline:1.5px solid var(--red);outline-offset:-1.5px}
 .tick{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;border:1.5px solid rgba(255,255,255,.75);display:grid;place-items:center;font-size:14px;line-height:1;color:transparent}
 .tick::after{content:"";position:absolute;inset:-8px}
-.done .tick{background:var(--ice);border-color:var(--ice);color:var(--night)}
+.done .tick{background:#FFFFFF;border-color:#FFFFFF;color:var(--night)}
 .late .tick{border-color:var(--red)}
 .nowline{position:absolute;left:0;right:0;height:2px;background:var(--red);z-index:3;pointer-events:none}
-.nowline::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--red)}
 #empty{position:absolute;left:var(--gutter);right:0;top:64px;text-align:center;color:var(--dim);padding:0 24px;pointer-events:none}
 
-.side{display:grid;gap:24px;min-width:0}
-.side h2{font:400 18px/1.2 var(--display);margin-bottom:8px}
+.info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 40px;align-items:start;max-width:1100px}
+.info section{min-width:0;display:grid;gap:8px}
+.info h2{font:800 30px/1 var(--display)}
+.bars{display:grid;gap:12px}
+.bar{display:grid;gap:4px;width:100%;text-align:left}
+.bar-top{display:flex;justify-content:space-between;gap:12px;font-size:16px}
+.bar-top span:last-child{color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.seg{display:block;height:10px;background:var(--raise);position:relative;-webkit-mask:repeating-linear-gradient(90deg,#000 0 7px,transparent 7px 10px);mask:repeating-linear-gradient(90deg,#000 0 7px,transparent 7px 10px)}
+.seg i{position:absolute;inset:0 auto 0 0;background:#7FB0FF}
+.bar.over .seg i{background:var(--red)}
+.bar.over .bar-top span:last-child{color:var(--red)}
+.screen{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:var(--dim)}
+.screen output{min-width:48px;text-align:center;color:var(--ink);font-variant-numeric:tabular-nums}
+.step{width:44px;height:44px;border-radius:50%;background:var(--raise);font-size:20px}
 .rows{display:grid;gap:2px}
-.row{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;padding:8px 10px;border-radius:8px;background:var(--panel)}
-.row:hover{background:var(--raise)}
+.row{display:flex;justify-content:space-between;gap:12px;width:100%;min-height:44px;align-items:center;text-align:left;padding:8px 10px;border-radius:6px;background:var(--panel)}
 .row span:last-child{color:var(--dim);white-space:nowrap;font-variant-numeric:tabular-nums}
 .row.over span:last-child{color:var(--red)}
-.row.soon span:last-child{color:var(--ice)}
-.more{margin-top:8px;color:var(--glow);padding:6px 0}
-.dreams{margin:0;padding:8px 10px 8px 30px;background:var(--panel);border-radius:8px;display:grid;gap:4px;width:100%;text-align:left}
-textarea,input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:16px}
-#notes{min-height:110px;resize:vertical;line-height:1.45}
-.report{width:100%}
+.row.soon span:last-child{color:var(--soft)}
+.more{color:#7FB0FF;min-height:44px;text-align:left}
+.dreams{margin:0;padding:8px 10px 8px 30px;background:var(--panel);border-radius:6px;display:grid;gap:4px;width:100%;text-align:left}
+#dreams{display:block;width:100%}
+textarea,input[type=text],input[type=password],input[type=number],input[type=date],input[type=time],select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 10px;font-size:16px}
+#notes{min-height:120px;resize:vertical;line-height:1.45}
 
-.tabs{display:none}
-dialog{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:0;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
-dialog::backdrop{background:rgba(2,6,14,.72)}
+dialog{background:var(--night);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:0;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
+dialog::backdrop{background:rgba(5,8,28,.72)}
 #sheetForm{display:grid;gap:12px;padding:18px}
-#sheetForm h2{font:400 20px/1.2 var(--display)}
+#sheetForm h2{font:800 32px/1 var(--display)}
 .f{display:grid;gap:4px;min-width:0}
-.f>label,.f>legend{color:var(--dim);font-size:14px;padding:0}
+.f>label,.f>legend{color:var(--dim);font-size:15px;padding:0}
 fieldset.f{border:0;margin:0;padding:0}
-.f-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.radio{display:flex;gap:8px;align-items:center;padding:4px 0;color:var(--ink);font-size:15px}
-.hint{color:var(--dim);font-size:14px}
-.hint a{color:var(--glow)}
-.err{color:var(--red);min-height:1.3em;font-size:14px}
+.radio{display:flex;gap:8px;align-items:center;padding:4px 0;color:var(--ink);font-size:16px}
+.hint{color:var(--dim);font-size:15px}
+.hint a{color:#7FB0FF}
+.err{color:var(--red);min-height:1.3em;font-size:15px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.actions .danger{margin-right:auto;color:var(--red);border-color:transparent;background:none;padding-left:0}
+.actions .danger{margin-right:auto;color:var(--red);background:none;padding-left:0}
+.actions .main-act{background:#FFFFFF;color:var(--paper);font-weight:700}
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--raise);border:1px solid var(--line);padding:8px 14px;border-radius:8px;z-index:20;max-width:calc(100vw - 32px)}
 
 @media (max-width:999px){
-  :root{--ppm:1.05;--gutter:40px}
-  #app{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));padding-top:calc(12px + env(safe-area-inset-top,0px));gap:12px}
-  #app:not([data-active="day"]) [data-tab="day"],
-  #app:not([data-active="panel"]) [data-tab="panel"],
-  #app:not([data-active="info"]) [data-tab="info"]{display:none}
-  .cluster{display:block;padding:0;border:0;background:none}
-  .gauge svg{max-width:300px}
-  .bars{margin-top:12px;background:var(--panel);padding:14px;border-radius:12px}
-  .main{display:block}
-  .bar-week h2{flex-basis:100%}
-  #add{margin-left:auto}
-  #head{grid-template-columns:repeat(7,minmax(0,1fr))}
-  #head>span{display:none}
-  .dh{min-height:52px}
-  #cols{grid-template-columns:var(--gutter) minmax(0,1fr)}
-  .day{display:none}
-  .day.sel{display:block}
-  .b strong{font-size:15px}
-  .b span{font-size:13px}
-  .b.can .open{padding-right:48px}
-  .b.can.narrow .open{padding:40px 6px 3px}
-  .tick{top:6px;right:8px;width:30px;height:30px;font-size:17px}
-  .tabs{display:grid;grid-template-columns:repeat(3,1fr);position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--panel);border-top:1px solid var(--line);padding:6px max(16px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-  .tabs button{height:46px;border-radius:8px;color:var(--dim)}
-  .tabs button[aria-current="true"]{color:var(--ink);background:var(--raise)}
+  :root{--ppm:1;--gutter:40px;--nav:62px}
+  .view-day{display:flex;flex-direction:column}
+  .hero{flex:none;padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;padding-left:max(20px,env(safe-area-inset-left,0px));gap:6px;justify-content:flex-start}
+  .hero-top{font-size:16px}
+  #heroKick{font-size:16px}
+  .hero-main{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+  #heroTitle{font-size:42px;line-height:.98;min-width:0}
+  #timer,#timer.long{flex:none;margin:0}
+  #timer{font-size:104px}
+  #timer.long{font-size:68px}
+  .hero-foot{gap:6px;align-items:stretch}
+  #heroTask{font-size:17px}
+  #heroRule{display:none}
+  .hero-acts{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px}
+  .act{height:48px;padding:0 8px;font-size:18px}
+  .act .long{display:none}
+  .act .short{display:inline}
+  .sched{flex:1;padding:8px 14px calc(var(--nav) + env(safe-area-inset-bottom,0px));gap:6px}
+  .chip{width:46px;height:52px;font-size:13px}
+  .chip b{font-size:22px}
+  .day-name h2{font-size:28px}
+  .day-name p{font-size:14px}
+  #prevDay,#nextDay,.wk-sum{display:none}
+  .r-open{grid-template-columns:90px minmax(0,1fr);gap:6px;min-height:50px;padding:0 6px}
+  .r.gap .r-open{min-height:38px}
+  .r-time{font-size:14px}
+  .r-text b{font-size:17px}
+  .tabs{left:0;right:0;bottom:0;width:auto;border-radius:0;border-top:1px solid var(--line);padding:6px max(14px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));gap:0}
+  .info{grid-template-columns:minmax(0,1fr)}
   dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:14px 14px 0 0;border-width:1px 0 0;max-height:88dvh}
   #sheetForm{padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+  #toast{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 }
-@media (prefers-reduced-motion:reduce){#needle,.seg i{transition:none}}
+@media (prefers-reduced-motion:reduce){.hero{transition:none}.slide-n,.slide-p{animation:none}}
 </style>
 </head>
 <body>
-<div id="app" data-active="day">
-  <div id="banner" hidden></div>
+<div id="banner" hidden></div>
 
-  <header class="cluster">
-    <section class="gauge" data-tab="panel" aria-label="Блоки за неделю"><div id="gauge"></div></section>
-    <section class="now" data-tab="day">
-      <h1 id="dateTitle">Приборка</h1>
-      <p id="weekName"></p>
-      <p class="line" id="nowLine"></p>
-      <p class="line" id="nextLine"></p>
+<main id="dayView" class="view-day">
+  <section class="hero" aria-label="Текущий блок">
+    <div class="hero-top"><span id="heroDate"></span><span id="heroTime"></span></div>
+    <div>
+      <p id="heroKick" hidden></p>
+      <div class="hero-main">
+        <h1 id="heroTitle">Приборка</h1>
+        <div id="timer" role="timer"></div>
+      </div>
+    </div>
+    <div class="hero-foot">
+      <button type="button" id="heroTask"></button>
+      <p id="heroRule">Телефон в другой комнате. Фильма на фоне нет.</p>
+      <div class="hero-acts" id="heroActs">
+        <button type="button" class="act solid" id="finishBtn">Закончил блок</button>
+        <button type="button" class="act line" id="moveBtn"><span class="long">Сорвал, перенести в резерв</span><span class="short">Сорвал</span></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sched" aria-label="Расписание дня">
+    <div class="strip" id="strip"></div>
+    <div class="day-head">
+      <div class="day-name"><h2 id="dayLabel"></h2><p id="daySub"></p></div>
+      <button type="button" class="sq" id="prevDay" aria-label="Предыдущий день">‹</button>
+      <button type="button" class="pill" id="quick"></button>
+      <button type="button" class="sq" id="nextDay" aria-label="Следующий день">›</button>
+      <button type="button" class="sq add" id="add" aria-label="Добавить блок">+</button>
+    </div>
+    <div id="swipe"><div id="rows"></div></div>
+    <div class="wk-sum">
+      <div class="wk-line"><h3 id="wkText"></h3><span id="wkDebt"></span></div>
+      <div id="cells"></div>
+    </div>
+  </section>
+</main>
+
+<section id="weekView" class="page" aria-label="Неделя" hidden>
+  <div class="bar-week">
+    <h2 id="range"></h2>
+    <button type="button" class="btn" id="prev" aria-label="Прошлая неделя">‹</button>
+    <button type="button" class="btn" id="todayBtn">Сегодня</button>
+    <button type="button" class="btn" id="next" aria-label="Следующая неделя">›</button>
+  </div>
+  <div class="week-scroll"><div class="week-in"><div id="head"></div><div id="cols"></div></div></div>
+</section>
+
+<section id="infoView" class="page" aria-label="Важное" hidden>
+  <div class="info">
+    <section>
+      <h2>Цифры месяца</h2>
+      <div class="bars" id="bars"></div>
       <div class="screen">
-        <span>Сериалы и манхва</span>
+        <span>Сериалы и манхва сегодня</span>
         <button type="button" class="step" id="scrMinus" aria-label="Убрать полчаса">−</button>
         <output id="scrVal">0 ч</output>
         <button type="button" class="step" id="scrPlus" aria-label="Добавить полчаса">+</button>
       </div>
     </section>
-    <section class="bars" id="bars" data-tab="panel" aria-label="Цели месяца"></section>
-  </header>
-
-  <main class="main">
-    <section data-tab="day" aria-label="Расписание">
-      <div class="bar-week">
-        <h2 id="range"></h2>
-        <button type="button" class="btn icon" id="prev" aria-label="Прошлая неделя">‹</button>
-        <button type="button" class="btn" id="todayBtn">Сегодня</button>
-        <button type="button" class="btn icon" id="next" aria-label="Следующая неделя">›</button>
-        <button type="button" class="btn main-act" id="add">Добавить блок</button>
-      </div>
-      <div id="head"></div>
-      <div id="cols"></div>
+    <section>
+      <h2>Сроки</h2>
+      <div class="rows" id="deadlines"></div>
+      <button type="button" class="more" id="addDeadline">Добавить срок</button>
     </section>
+    <section>
+      <h2>Пять мечт</h2>
+      <button type="button" id="dreams" aria-label="Изменить список мечт"></button>
+    </section>
+    <section>
+      <h2><label for="notes">Заметки</label></h2>
+      <textarea id="notes" placeholder="Всё, что должно быть перед глазами"></textarea>
+    </section>
+    <section>
+      <h2>Синхронизация</h2>
+      <div class="rows">
+        <button type="button" class="row" id="syncBtn"></button>
+        <button type="button" class="row" id="widgetBtn" hidden>Скопировать виджет для iPhone</button>
+      </div>
+    </section>
+    <section>
+      <h2>Отчёт</h2>
+      <button type="button" class="btn" id="report">Скопировать отчёт за месяц</button>
+    </section>
+  </div>
+</section>
 
-    <aside class="side" data-tab="info">
-      <section>
-        <h2>Дедлайны</h2>
-        <div class="rows" id="deadlines"></div>
-        <button type="button" class="more" id="addDeadline">Добавить дедлайн</button>
-      </section>
-      <section>
-        <h2>Пять мечт</h2>
-        <button type="button" id="dreams" aria-label="Изменить список мечт" style="display:block;width:100%"></button>
-      </section>
-      <section>
-        <h2><label for="notes">Заметки</label></h2>
-        <textarea id="notes" placeholder="Всё, что должно быть перед глазами"></textarea>
-      </section>
-      <section>
-        <h2>Синхронизация</h2>
-        <div class="rows">
-          <button type="button" class="row" id="syncBtn"></button>
-          <button type="button" class="row" id="widgetBtn" hidden>Скопировать виджет для iPhone</button>
-        </div>
-      </section>
-      <button type="button" class="btn report" id="report">Скопировать отчёт за месяц</button>
-    </aside>
-  </main>
-
-  <nav class="tabs" aria-label="Разделы">
-    <button type="button" data-go="day" aria-current="true">День</button>
-    <button type="button" data-go="panel">Приборы</button>
-    <button type="button" data-go="info">Важное</button>
-  </nav>
-</div>
+<nav class="tabs" aria-label="Разделы">
+  <button type="button" data-go="day" aria-current="true">День</button>
+  <button type="button" data-go="week">Неделя</button>
+  <button type="button" data-go="info">Важное</button>
+</nav>
 
 <dialog id="sheet"><form id="sheetForm"></form></dialog>
 <div id="toast" role="status" hidden></div>
@@ -241,21 +317,21 @@ fieldset.f{border:0;margin:0;padding:0}
 <script>
 const HOUR0 = 6, HOUR1 = 24, ANCHOR = '2026-10-26', CACHE = 'pribor-v1';
 const WD = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-// check: можно отметить, count: идёт в тахометр недели
+// check: можно отметить, count: идёт в счёт недели, flood: цвет экрана, пока блок идёт
 const KINDS = {
-  code: {label: 'Код без ИИ', check: 1, count: 1},
-  english: {label: 'Английский', check: 1, count: 1},
-  edit: {label: 'Монтаж', check: 1, count: 1},
-  task: {label: 'Дело', check: 1, count: 1},
-  people: {label: 'Встреча с людьми', check: 1, count: 1},
-  sport: {label: 'Спорт', check: 1},
-  class: {label: 'Пара'},
-  duty: {label: 'ВУЦ'},
+  code: {label: 'Код без ИИ', check: 1, count: 1, flood: '#1236D6'},
+  english: {label: 'Английский', check: 1, count: 1, flood: '#0B6E7F'},
+  edit: {label: 'Монтаж', check: 1, count: 1, flood: '#5A2BC2'},
+  task: {label: 'Дело', check: 1, count: 1, flood: '#2A4673'},
+  people: {label: 'Встреча с людьми', check: 1, count: 1, flood: '#7A45E6'},
+  sport: {label: 'Спорт', check: 1, flood: '#0A6B5C'},
+  class: {label: 'Пара', flood: '#1A2152'},
+  duty: {label: 'ВУЦ', flood: '#1A2152'},
 };
 const EMPTY = {anchor: ANCHOR, goals: [], deadlines: [], dreams: [], notes: ''};
 
 const S = {plan: {a: {items: []}, b: {items: []}}, days: {}, settings: null, ready: false};
-let sel = ymd(new Date()), scrolled = false;
+let sel = ymd(new Date()), view = 'day', heroKey = '', centered = '', heroNow = null;
 
 const $ = id => document.getElementById(id);
 function pad(n) { return String(n).padStart(2, '0'); }
@@ -265,6 +341,8 @@ function addDays(s, n) { const d = parse(s); d.setDate(d.getDate() + n); return 
 const wd = s => (parse(s).getDay() + 6) % 7;
 const monday = s => addDays(s, -wd(s));
 const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const fromMin = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+const short = t => t.replace(/^0/, '');
 const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
 const cfg = () => S.settings || EMPTY;
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -272,6 +350,11 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&
 const num = n => String(Math.round(n * 10) / 10).replace('.', ',');
 function plural(n, a, b, c) { const m = Math.abs(n) % 100, k = m % 10; return m > 10 && m < 20 ? c : k > 1 && k < 5 ? b : k === 1 ? a : c; }
 const fmt = (s, o) => new Intl.DateTimeFormat('ru', o).format(parse(s));
+const cap = s => s.replace(/^./, c => c.toUpperCase());
+function timerText(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60, s = sec % 60;
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
 
 function weekKey(s, anchor = cfg().anchor || ANCHOR) {
   const n = Math.round((parse(monday(s)) - parse(anchor)) / (7 * 864e5));
@@ -312,7 +395,7 @@ function layout(list) {
 }
 
 function weekStats(any) {
-  const m = monday(any), today = ymd(new Date()), now = nowMin();
+  const m = monday(any), today = ymd(new Date()), now = nowMin(), cells = [];
   let total = 0, done = 0, due = 0;
   for (let i = 0; i < 7; i++) {
     const d = addDays(m, i);
@@ -320,11 +403,14 @@ function weekStats(any) {
     for (const it of resolve(d)) {
       if (!KINDS[it.kind]?.count) continue;
       total++;
-      if (S.days[d]?.done?.[it.id]) done++;
-      if (d < today || (d === today && toMin(it.end) <= now)) due++;
+      const ok = !!S.days[d]?.done?.[it.id], over = d < today || (d === today && toMin(it.end) <= now);
+      if (ok) done++;
+      if (over) due++;
+      const live = d === today && toMin(it.start) <= now && now < toMin(it.end);
+      cells.push(ok ? 'done' : live ? 'now' : over ? 'miss' : '');
     }
   }
-  return {total, done, due, behind: Math.max(0, due - done)};
+  return {total, done, due, behind: Math.max(0, due - done), cells};
 }
 
 function monthStats(ym) {
@@ -342,12 +428,45 @@ function monthStats(ym) {
   return r;
 }
 
+// Что показывать на главном экране: идущий блок, следующий сегодня или первый из будущих дней
+function hero() {
+  const today = ymd(new Date()), now = nowMin(), list = resolve(today);
+  const open = i => !S.days[today]?.done?.[i.id];
+  const cur = list.filter(i => toMin(i.start) <= now && now < toMin(i.end) && open(i));
+  const it = cur.find(i => KINDS[i.kind]?.check) || cur[0];
+  if (it) return {mode: 'now', it, date: today, key: `now${it.id}`};
+  const next = list.find(i => toMin(i.start) > now && open(i));
+  if (next) return {mode: 'next', it: next, date: today, key: `next${next.id}`};
+  for (let n = 1; n <= 7; n++) {
+    const d = addDays(today, n), first = resolve(d)[0];
+    if (first) return {mode: 'later', it: first, date: d, key: `later${d}${first.id}`};
+  }
+  return {mode: 'empty', key: 'empty'};
+}
+
+// Ближайшее свободное окно для сорванного блока
+function findSlot(mins) {
+  const today = ymd(new Date());
+  for (let n = 0; n < 8; n++) {
+    const date = addDays(today, n);
+    let cur = n ? 480 : Math.max(480, Math.ceil(nowMin() / 5) * 5), slot = null;
+    for (const it of resolve(date)) {
+      if (toMin(it.start) - cur >= mins) { slot = cur; break; }
+      cur = Math.max(cur, toMin(it.end));
+    }
+    if (slot === null && 1380 - cur >= mins) slot = cur;
+    if (slot !== null) return {date, start: fromMin(slot), end: fromMin(slot + mins)};
+  }
+  return {date: today, start: '18:00', end: fromMin(1080 + mins)};
+}
+
 function selfCheck() {
   console.assert(weekKey('2026-10-26', ANCHOR) === 'a' && weekKey('2026-11-02', ANCHOR) === 'b' && weekKey('2026-11-09', ANCHOR) === 'a' && weekKey('2026-10-19', ANCHOR) === 'b', 'weekKey');
   console.assert(monday('2026-11-01') === '2026-10-26' && addDays('2026-11-30', 1) === '2026-12-01', 'dates');
   const l = layout([{start: '17:00', end: '18:35'}, {start: '17:00', end: '19:00'}, {start: '19:45', end: '20:30'}]);
   console.assert(l[0].lanes === 2 && l[1].lane === 1 && l[2].lanes === 1, 'layout');
   console.assert(plural(1, 'блок', 'блока', 'блоков') === 'блок' && plural(12, 'блок', 'блока', 'блоков') === 'блоков' && plural(3, 'блок', 'блока', 'блоков') === 'блока', 'plural');
+  console.assert(timerText(65) === '01:05' && timerText(3725) === '1:02:05' && short('08:20') === '8:20', 'time');
 }
 
 /* Данные живут в приватном gist. Правка сразу пишется на устройство, в gist уходит, когда есть связь. */
@@ -469,7 +588,7 @@ function toggle(date, id) {
   else d.done[id] = {k: it.kind, m: toMin(it.end) - toMin(it.start)};
   putDay(date, d);
   render();
-  document.querySelector(`[data-tick="${id}"][data-date="${date}"]`)?.focus();
+  document.querySelector(`#rows [data-tick="${id}"]`)?.focus();
 }
 
 function applyBlock(date, orig, v) {
@@ -489,6 +608,16 @@ function applyBlock(date, orig, v) {
       putDay(v.date, dst);
     }
   }
+  if (v.date !== date && S.days[date]?.tasks?.[item.id]) {
+    const old = dayDoc(date);
+    delete old.tasks[item.id];
+    putDay(date, old);
+  }
+  const d = dayDoc(v.date);
+  d.tasks ||= {};
+  if (v.task) d.tasks[item.id] = v.task;
+  else delete d.tasks[item.id];
+  putDay(v.date, d);
   sel = v.date;
   render();
 }
@@ -506,99 +635,164 @@ function removeBlock(date, orig, scope) {
   render();
 }
 
-/* Отрисовка */
+/* Главный экран */
+function secondsLeft() {
+  const d = new Date(), now = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+  const target = heroNow.mode === 'now' ? heroNow.it.end : heroNow.it.start;
+  return Math.max(0, toMin(target) * 60 - now);
+}
+function paintTimer() {
+  const show = heroNow.mode === 'now' || heroNow.mode === 'next';
+  const t = $('timer');
+  t.hidden = !show;
+  if (!show) return;
+  const sec = secondsLeft();
+  t.textContent = timerText(sec);
+  t.classList.toggle('long', sec >= 3600);
+}
+function renderHero() {
+  const h = hero(), today = ymd(new Date());
+  heroNow = h;
+  heroKey = h.key;
+  const it = h.it, kind = it ? KINDS[it.kind] || KINDS.task : null, doing = h.mode === 'now';
+  document.documentElement.style.setProperty('--flood', doing ? kind.flood : KINDS.class.flood);
+  $('heroDate').textContent = fmt(today, {weekday: 'long', day: 'numeric', month: 'long'}).replace(/^./, c => c.toUpperCase());
+  $('heroTime').textContent = !it ? '' : doing ? `${short(it.start)}–${short(it.end)}` : h.mode === 'next' ? `Начало в ${short(it.start)}` : `${fmt(h.date, {weekday: 'short', day: 'numeric', month: 'long'})}, ${short(it.start)}`;
+  const kick = $('heroKick');
+  kick.hidden = doing;
+  kick.textContent = h.mode === 'next' ? 'Сейчас свободно, дальше' : h.mode === 'later' ? 'На сегодня всё, дальше' : '';
+  $('heroTitle').textContent = it ? it.title : 'Блоков нет';
+  const task = it && S.days[h.date]?.tasks?.[it.id];
+  const btn = $('heroTask');
+  btn.hidden = !it;
+  btn.textContent = task || (it && (kind.check ? 'Запиши задачу на этот блок' : it.note)) || '';
+  $('heroRule').hidden = !(doing && (it.kind === 'code' || it.kind === 'edit'));
+  $('heroActs').hidden = !(doing && kind.check);
+  paintTimer();
+}
+
+/* Расписание выбранного дня */
+function dayRows(date) {
+  const today = ymd(new Date()), now = nowMin(), since = cfg().since || '', rows = [];
+  let cursor = 0;
+  const free = (time, from, note) => rows.push({gap: true, time, from, note});
+  for (const it of resolve(date)) {
+    const s = toMin(it.start), e = toMin(it.end), kind = KINDS[it.kind] || KINDS.task;
+    if (cursor && s - cursor >= 60) {
+      const len = s - cursor, h = Math.floor(len / 60), m = len % 60;
+      free(`${short(fromMin(cursor))}–${short(it.start)}`, fromMin(cursor), `${h ? `${h} ч ` : ''}${m ? `${m} мин` : ''}`.trim());
+    }
+    const past = date < today || (date === today && e <= now);
+    const done = !!S.days[date]?.done?.[it.id];
+    const live = date === today && s <= now && now < e && !done;
+    const task = S.days[date]?.tasks?.[it.id];
+    const miss = kind.check && !done && past && date >= since;
+    rows.push({it, kind, done, live, past, miss, note: miss ? 'Пропущен' : task || it.note || ''});
+    cursor = Math.max(cursor, e);
+  }
+  if (cursor && cursor < 1380) free(`с ${short(fromMin(cursor))}`, fromMin(cursor), 'До отбоя');
+  if (!cursor) free('Весь день', '10:00', 'Блоков нет, нажми, чтобы добавить');
+  return rows;
+}
+
+function renderRows() {
+  $('rows').innerHTML = dayRows(sel).map(r => {
+    if (r.gap) return `<div class="r gap"><button type="button" class="r-open" data-gap="${r.from}"><span class="r-time">${r.time}</span><span class="r-text"><b>Свободно</b><small>${esc(r.note)}</small></span></button></div>`;
+    const cls = r.live ? 'now' : r.past ? 'past' : r.kind.check ? 'block' : 'plain';
+    return `<div class="r ${cls}${r.miss ? ' miss' : ''}">
+      <button type="button" class="r-open" data-open="${esc(r.it.id)}"><span class="r-time">${short(r.it.start)}–${short(r.it.end)}</span><span class="r-text"><b>${esc(r.it.title)}</b><small>${esc(r.note)}</small></span></button>
+      ${r.kind.check ? `<button type="button" class="r-tick${r.done ? ' done' : ''}" data-tick="${esc(r.it.id)}" aria-pressed="${r.done}" aria-label="${esc(r.it.title)}: ${r.done ? 'сделано' : 'отметить сделанным'}">✓</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderStrip() {
+  const today = ymd(new Date());
+  let start = addDays(monday(today), -14);
+  if (sel < start || sel >= addDays(start, 112)) start = addDays(monday(sel), -14);
+  let html = '';
+  for (let n = 0; n < 112; n++) {
+    const d = addDays(start, n);
+    html += `<button type="button" class="chip${n && n % 7 === 0 ? ' wk' : ''}${d === today ? ' today' : ''}${d === sel ? ' sel' : ''}" data-day="${d}" aria-pressed="${d === sel}" aria-label="${esc(fmt(d, {weekday: 'long', day: 'numeric', month: 'long'}))}">${WD[n % 7]}<b>${parse(d).getDate()}</b></button>`;
+  }
+  $('strip').innerHTML = html;
+}
+function centerStrip(smooth) {
+  const s = $('strip'), el = s.querySelector('.sel');
+  if (!el || !s.clientWidth) return;
+  centered = sel;
+  s.scrollTo({left: el.offsetLeft - s.clientWidth / 2 + el.offsetWidth / 2, behavior: smooth ? 'smooth' : 'auto'});
+}
+
+function renderDay() {
+  const today = ymd(new Date());
+  const delta = Math.round((parse(sel) - parse(today)) / 864e5);
+  $('dayLabel').textContent = delta === 0 ? 'Сегодня' : delta === 1 ? 'Завтра' : delta === -1 ? 'Вчера' : cap(fmt(sel, {weekday: 'long'}));
+  $('daySub').textContent = `${fmt(sel, {weekday: 'long', day: 'numeric', month: 'long'})}, ${weekKey(sel) === 'a' ? '1-я' : '2-я'} неделя`;
+  $('quick').textContent = delta === 0 ? 'Завтра' : 'Сегодня';
+  renderStrip();
+  renderRows();
+  const w = weekStats(sel);
+  $('wkText').textContent = `Неделя: ${w.done} из ${w.total}`;
+  $('wkDebt').textContent = w.behind ? `Долг: ${w.behind} ${plural(w.behind, 'блок', 'блока', 'блоков')}` : '';
+  $('cells').innerHTML = w.cells.map(c => `<i class="${c}"></i>`).join('');
+  if (centered !== sel) centerStrip(!!centered);
+}
+
+function go(date) {
+  if (date === sel) return;
+  const dir = date > sel ? 'slide-n' : 'slide-p';
+  sel = date;
+  render();
+  const r = $('rows');
+  r.classList.remove('slide-n', 'slide-p');
+  void r.offsetWidth;
+  r.classList.add(dir);
+  r.scrollTop = 0;
+}
+function setView(v) {
+  view = v;
+  $('dayView').hidden = v !== 'day';
+  $('weekView').hidden = v !== 'week';
+  $('infoView').hidden = v !== 'info';
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.go === v));
+  scrollTo(0, 0);
+  if (v === 'day') { render(); centerStrip(false); }
+}
+
+/* Неделя */
 function renderWeek() {
-  const m = monday(sel), today = ymd(new Date()), now = nowMin();
+  const m = monday(sel), today = ymd(new Date()), now = nowMin(), since = cfg().since || '';
   let head = '<span></span>', cols = '<div class="hours">';
   for (let h = HOUR0; h < HOUR1; h++) cols += `<span style="top:calc(var(--ppm)*${(h - HOUR0) * 60}px)">${h}:00</span>`;
   cols += '</div>';
   for (let i = 0; i < 7; i++) {
-    const d = addDays(m, i), cls = (d === today ? ' today' : '') + (d === sel ? ' sel' : '');
-    head += `<button type="button" class="dh${cls}" data-sel="${d}" aria-label="${esc(fmt(d, {weekday: 'long', day: 'numeric', month: 'long'}))}">${WD[i]}<b>${parse(d).getDate()}</b></button>`;
+    const d = addDays(m, i), cls = d === today ? ' today' : '';
+    head += `<button type="button" class="dh${cls}" data-sel="${d}" aria-label="Открыть ${esc(fmt(d, {weekday: 'long', day: 'numeric', month: 'long'}))}">${WD[i]}<b>${parse(d).getDate()}</b></button>`;
     cols += `<div class="day${cls}" data-date="${d}">`;
     for (const {it, lane, lanes} of layout(resolve(d))) {
       const s = Math.max(toMin(it.start), HOUR0 * 60), mins = toMin(it.end) - s;
       const kind = KINDS[it.kind] || KINDS.task, done = !!S.days[d]?.done?.[it.id];
-      const late = kind.check && !done && d >= (cfg().since || '') && (d < today || (d === today && toMin(it.end) <= now));
+      const late = kind.check && !done && d >= since && (d < today || (d === today && toMin(it.end) <= now));
       const box = `top:calc(var(--ppm)*${s - HOUR0 * 60}px);height:calc(var(--ppm)*${mins}px);left:calc(${lane * 100 / lanes}% + 2px);width:calc(${100 / lanes}% - 4px)`;
       const tall = mins >= 60;
       cols += `<article class="b k-${esc(it.kind)}${kind.check ? ' can' : ''}${lanes > 1 ? ' narrow' : ''}${done ? ' done' : ''}${late ? ' late' : ''}" style="${box}">
-        <button type="button" class="open" data-open="${esc(it.id)}" data-date="${d}" title="${esc(it.title)}"><strong>${esc(it.title)}</strong>${tall ? `<span>${it.start}–${it.end}</span>` : ''}${tall && it.note ? `<span>${esc(it.note)}</span>` : ''}</button>
+        <button type="button" class="open" data-open="${esc(it.id)}" data-date="${d}" title="${esc(it.title)}"><strong>${esc(it.title)}</strong>${tall ? `<span>${short(it.start)}–${short(it.end)}</span>` : ''}</button>
         ${kind.check ? `<button type="button" class="tick" data-tick="${esc(it.id)}" data-date="${d}" aria-pressed="${done}" aria-label="${esc(it.title)}: ${done ? 'сделано' : 'отметить сделанным'}">✓</button>` : ''}
       </article>`;
     }
     if (d === today && now >= HOUR0 * 60) cols += `<div class="nowline" style="top:calc(var(--ppm)*${now - HOUR0 * 60}px)"></div>`;
     cols += '</div>';
   }
-  const empty = !S.plan.a.items.length && !S.plan.b.items.length;
-  if (empty) cols += `<p id="empty">${S.ready ? 'Расписание пустое. Нажми «Добавить блок» или на время в сетке.' : 'Загружаю расписание.'}</p>`;
+  if (!S.plan.a.items.length && !S.plan.b.items.length) cols += `<p id="empty">${S.ready ? 'Расписание пустое. Нажми на время в сетке, чтобы добавить блок.' : 'Загружаю расписание.'}</p>`;
   $('head').innerHTML = head;
   $('cols').innerHTML = cols;
+  $('range').textContent = `${fmt(m, {day: 'numeric', month: 'long'})} – ${fmt(addDays(m, 6), {day: 'numeric', month: 'long'})}`;
 }
 
-function buildGauge(n) {
-  const c = 130, pol = (p, r) => { const a = (135 + 270 * p) * Math.PI / 180; return [c + r * Math.cos(a), c + r * Math.sin(a)]; };
-  const arc = (p0, p1, r) => { const [x0, y0] = pol(p0, r), [x1, y1] = pol(p1, r); return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 ${(p1 - p0) * 270 > 180 ? 1 : 0} 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`; };
-  buildGauge.arc = arc;
-  let ticks = '';
-  const step = Math.max(1, Math.ceil(n / 8));
-  for (let i = 0; i <= n; i++) {
-    const p = n ? i / n : 0, major = i % step === 0, [x0, y0] = pol(p, major ? 104 : 109), [x1, y1] = pol(p, 116), [tx, ty] = pol(p, 90);
-    ticks += `<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="var(--ice)" stroke-width="${major ? 2.5 : 1.5}"/>`;
-    if (major) ticks += `<text class="g-num" x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle" dominant-baseline="central">${i}</text>`;
-  }
-  const [nx, ny] = pol(0, 100), [tx, ty] = pol(0, -16);
-  $('gauge').innerHTML = `<svg viewBox="0 0 260 244" role="img" aria-labelledby="gLabel"><title id="gLabel"></title>
-    <path d="${arc(0, 1, 118)}" fill="none" stroke="var(--line)" stroke-width="3"/>
-    <path id="gFill" fill="none" stroke="var(--glow)" stroke-width="6"/>
-    <path id="gBehind" fill="none" stroke="var(--red)" stroke-width="6"/>
-    ${ticks}
-    <g id="needle" style="transform-origin:130px 130px"><line x1="${tx.toFixed(1)}" y1="${ty.toFixed(1)}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/></g>
-    <circle cx="130" cy="130" r="9" fill="var(--raise)" stroke="var(--line)"/>
-    <text id="gRead" class="g-read" x="130" y="196" text-anchor="middle"></text>
-    <text id="gSub" class="g-sub" x="130" y="218" text-anchor="middle"></text>
-  </svg>`;
-}
-function setNeedle(p) { const e = $('needle'); if (e) e.style.transform = `rotate(${270 * p}deg)`; }
-
-let gTotal = -1, swept = false, sweeping = false;
-function renderGauge() {
-  const w = weekStats(sel);
-  if (w.total !== gTotal) { gTotal = w.total; buildGauge(w.total); }
-  const p = w.total ? Math.min(1, w.done / w.total) : 0, q = w.total ? Math.min(1, w.due / w.total) : 0;
-  const arc = buildGauge.arc;
-  $('gFill').setAttribute('d', p > 0 ? arc(0, p, 118) : '');
-  $('gBehind').setAttribute('d', q > p ? arc(p, q, 118) : '');
-  $('gRead').textContent = `${w.done} из ${w.total}`;
-  const sub = $('gSub');
-  sub.classList.toggle('bad', w.behind > 0);
-  const since = cfg().since || '';
-  sub.textContent = !w.total ? (addDays(monday(sel), 6) < since ? `План стартует ${fmt(since, {day: 'numeric', month: 'long'})}` : 'На неделе нет блоков') : w.behind ? `Отстаёшь на ${w.behind} ${plural(w.behind, 'блок', 'блока', 'блоков')}` : w.done === w.total ? 'Неделя закрыта' : 'Идёшь по плану';
-  $('gLabel').textContent = `Закрыто ${w.done} блоков из ${w.total}. ${sub.textContent}.`;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // при первом запуске стрелка делает прогазовку, как при включении зажигания
-  if (!swept && S.ready && !reduce) {
-    swept = sweeping = true;
-    setNeedle(0);
-    setTimeout(() => setNeedle(1), 40);
-    setTimeout(() => { sweeping = false; renderGauge(); }, 800);
-  } else if (!sweeping) setNeedle(p);
-}
-
-function renderNow() {
-  const today = ymd(new Date()), now = nowMin();
-  $('dateTitle').textContent = fmt(sel, {weekday: 'long', day: 'numeric', month: 'long'}).replace(/^./, c => c.toUpperCase());
-  $('weekName').textContent = `${weekKey(sel) === 'a' ? '1-я' : '2-я'} неделя по расписанию`;
-  const list = resolve(today);
-  const cur = list.find(i => toMin(i.start) <= now && now < toMin(i.end));
-  const next = list.find(i => toMin(i.start) > now);
-  $('nowLine').innerHTML = cur ? `Сейчас: <b>${esc(cur.title)}</b>, ещё ${toMin(cur.end) - now} мин` : 'Сейчас по плану свободно';
-  $('nextLine').innerHTML = next ? `Дальше: <b>${esc(next.title)}</b> в ${next.start}` : 'На сегодня блоков больше нет';
-  $('scrVal').textContent = `${num(S.days[sel]?.screen || 0)} ч`;
-}
-
+/* Важное */
 function renderBars() {
-  const ym = sel.slice(0, 7), r = monthStats(ym), month = fmt(sel, {month: 'long'});
+  const r = monthStats(sel.slice(0, 7)), month = fmt(sel, {month: 'long'});
   $('bars').innerHTML = cfg().goals.map(g => {
     let v = g.value || 0, shown;
     if (g.auto === 'screen') {
@@ -610,8 +804,9 @@ function renderBars() {
     }
     const over = g.auto === 'screen' && v > g.target;
     const pct = Math.min(100, g.auto === 'screen' ? v / (g.target * 2) * 100 : g.target ? v / g.target * 100 : 0);
-    return `<button type="button" class="bar${over ? ' over' : ''}" data-goal="${esc(g.id)}"><span class="bar-top"><span>${esc(g.title)}${g.auto && g.auto !== 'screen' ? `, ${month}` : ''}</span><span>${shown}</span></span><span class="seg" style="display:block"><i style="width:${pct.toFixed(1)}%"></i></span></button>`;
+    return `<button type="button" class="bar${over ? ' over' : ''}" data-goal="${esc(g.id)}"><span class="bar-top"><span>${esc(g.title)}${g.auto && g.auto !== 'screen' ? `, ${month}` : ''}</span><span>${shown}</span></span><span class="seg"><i style="width:${pct.toFixed(1)}%"></i></span></button>`;
   }).join('');
+  $('scrVal').textContent = `${num(S.days[ymd(new Date())]?.screen || 0)} ч`;
 }
 
 function renderSide() {
@@ -620,7 +815,7 @@ function renderSide() {
     const n = Math.round((parse(d.date) - parse(today)) / 864e5);
     const left = n === 0 ? 'сегодня' : n < 0 ? `просрочено на ${-n} ${plural(-n, 'день', 'дня', 'дней')}` : `через ${n} ${plural(n, 'день', 'дня', 'дней')}`;
     return `<button type="button" class="row${n < 0 ? ' over' : n <= 7 ? ' soon' : ''}" data-deadline="${esc(d.id)}"><span>${esc(d.title)}</span><span>${left}</span></button>`;
-  }).join('') || '<p>Дедлайнов нет.</p>';
+  }).join('') || '<p>Сроков нет.</p>';
   $('dreams').innerHTML = `<ol class="dreams">${cfg().dreams.map(d => `<li>${esc(d)}</li>`).join('')}</ol>`;
   if (document.activeElement !== $('notes')) $('notes').value = cfg().notes || '';
   $('syncBtn').textContent = sync ? `Подключено: ${sync.owner}` : 'Подключить данные';
@@ -629,17 +824,11 @@ function renderSide() {
 }
 
 function render() {
-  renderNow();
-  renderGauge();
-  renderBars();
+  renderHero();
+  renderDay();
   renderWeek();
+  renderBars();
   renderSide();
-  const w = monday(sel);
-  $('range').textContent = `${fmt(w, {day: 'numeric', month: 'long'})} – ${fmt(addDays(w, 6), {day: 'numeric', month: 'long'})}`;
-  if (!scrolled && S.ready && innerWidth < 1000 && sel === ymd(new Date())) {
-    scrolled = true;
-    document.querySelector('.nowline')?.scrollIntoView({block: 'center'});
-  }
 }
 
 /* Универсальная форма в диалоге */
@@ -674,7 +863,7 @@ function form({title, hint, fields, onSave, onDelete, extra}) {
   sheetForm.onclick = e => {
     const act = e.target.dataset?.act;
     if (act === 'close') sheet.close();
-    if (act === 'extra') { extra.run(); sheet.close(); }
+    if (act === 'extra') { sheet.close(); extra.run(); }
     if (act === 'del') {
       if (e.target.dataset.sure) { onDelete(values()); sheet.close(); }
       else { e.target.dataset.sure = '1'; e.target.textContent = 'Точно удалить?'; }
@@ -687,34 +876,37 @@ function checkBlock(v) {
   if (!v.title.trim()) return 'Напиши название блока.';
   if (!v.date) return 'Выбери дату.';
   if (!v.start || !v.end) return 'Укажи начало и конец.';
-  if (toMin(v.start) < HOUR0 * 60) return 'Сетка начинается в 6:00. Поставь время позже.';
+  if (toMin(v.start) < HOUR0 * 60) return 'День в расписании начинается в 6:00. Поставь время позже.';
   if (toMin(v.end) <= toMin(v.start)) return 'Конец должен быть позже начала.';
 }
 
-function blockForm(date, orig, start) {
+// move: куда предложить перенести сорванный блок
+function blockForm(date, orig, start, move) {
   const forked = Array.isArray(S.days[date]?.items);
-  const end = start ? `${pad(Math.min(23, Math.floor((toMin(start) + 60) / 60)))}:${pad(toMin(start) % 60)}` : '19:00';
+  const end = start ? fromMin(Math.min(toMin(start) + 60, 1439)) : '19:00';
   const it = orig || {title: '', kind: 'task', start: start || '18:00', end, note: ''};
   const kind = KINDS[it.kind] || KINDS.task, done = !!S.days[date]?.done?.[it.id];
   const fields = [
     {id: 'f-title', key: 'title', label: 'Название', value: it.title},
+    {id: 'f-task', key: 'task', label: 'Задача на этот блок', value: S.days[date]?.tasks?.[it.id] || ''},
     {id: 'f-kind', key: 'kind', label: 'Тип', type: 'select', value: it.kind, options: Object.entries(KINDS).map(([k, v]) => [k, v.label])},
-    {id: 'f-date', key: 'date', label: 'Дата', type: 'date', value: date},
-    {id: 'f-start', key: 'start', label: 'Начало', type: 'time', value: it.start},
-    {id: 'f-end', key: 'end', label: 'Конец', type: 'time', value: it.end},
+    {id: 'f-date', key: 'date', label: 'Дата', type: 'date', value: move?.date || date},
+    {id: 'f-start', key: 'start', label: 'Начало', type: 'time', value: move?.start || it.start},
+    {id: 'f-end', key: 'end', label: 'Конец', type: 'time', value: move?.end || it.end},
     {id: 'f-note', key: 'note', label: 'Заметка', value: it.note || ''},
   ];
-  if (!forked) fields.push({key: 'scope', label: 'Применить', type: 'radio', value: 'day', options: [['day', 'Только к этому дню'], ['week', `Ко всем ${weekKey(date) === 'a' ? 'первым' : 'вторым'} неделям`]]});
+  if (!forked && !move) fields.push({key: 'scope', label: 'Применить', type: 'radio', value: 'day', options: [['day', 'Только к этому дню'], ['week', `Ко всем ${weekKey(date) === 'a' ? 'первым' : 'вторым'} неделям`]]});
   form({
-    title: orig ? 'Блок' : 'Новый блок',
+    title: move ? 'Перенести блок' : orig ? 'Блок' : 'Новый блок',
+    hint: move ? 'Подставлено ближайшее свободное окно. Поменяй, если нужно.' : '',
     fields,
-    extra: orig && kind.check ? {label: done ? 'Снять отметку' : 'Сделано', run: () => toggle(date, it.id)} : null,
+    extra: orig && kind.check && !move ? {label: done ? 'Снять отметку' : 'Сделано', run: () => toggle(date, it.id)} : null,
     onSave: v => {
       const err = checkBlock(v);
       if (err) return err;
-      applyBlock(date, orig, {scope: 'day', ...v, title: v.title.trim()});
+      applyBlock(date, orig, {scope: 'day', ...v, title: v.title.trim(), task: v.task.trim()});
     },
-    onDelete: orig ? v => removeBlock(date, orig, v.scope || 'day') : null,
+    onDelete: orig && !move ? v => removeBlock(date, orig, v.scope || 'day') : null,
   });
 }
 
@@ -733,7 +925,7 @@ function goalForm(g) {
 
 function deadlineForm(d) {
   form({
-    title: d ? 'Дедлайн' : 'Новый дедлайн',
+    title: d ? 'Срок' : 'Новый срок',
     fields: [
       {id: 'f-dt', key: 'title', label: 'Что нужно сделать', value: d?.title || ''},
       {id: 'f-dd', key: 'date', label: 'Дата', type: 'date', value: d?.date || addDays(ymd(new Date()), 7)},
@@ -773,6 +965,59 @@ function toast(text) {
 }
 
 /* События */
+$('finishBtn').onclick = () => { if (heroNow?.it) toggle(heroNow.date, heroNow.it.id); };
+$('moveBtn').onclick = () => {
+  const {it, date} = heroNow;
+  blockForm(date, it, null, findSlot(toMin(it.end) - toMin(it.start)));
+};
+$('heroTask').onclick = () => { if (heroNow?.it) blockForm(heroNow.date, heroNow.it); };
+
+$('strip').addEventListener('click', e => {
+  const b = e.target.closest('[data-day]');
+  if (b) go(b.dataset.day);
+});
+// На ПК колесо мыши крутит ленту дат
+$('strip').addEventListener('wheel', e => {
+  if (!e.deltaY) return;
+  e.preventDefault();
+  $('strip').scrollLeft += e.deltaY;
+}, {passive: false});
+$('prevDay').onclick = () => go(addDays(sel, -1));
+$('nextDay').onclick = () => go(addDays(sel, 1));
+$('quick').onclick = () => { const t = ymd(new Date()); go(sel === t ? addDays(t, 1) : t); };
+$('add').onclick = () => blockForm(sel, null);
+
+$('rows').addEventListener('click', e => {
+  const tick = e.target.closest('[data-tick]');
+  if (tick) return toggle(sel, tick.dataset.tick);
+  const gap = e.target.closest('[data-gap]');
+  if (gap) return blockForm(sel, null, gap.dataset.gap);
+  const open = e.target.closest('[data-open]');
+  if (open) blockForm(sel, resolve(sel).find(i => i.id === open.dataset.open));
+});
+
+// Свайп по расписанию листает дни, вертикальная прокрутка остаётся за браузером
+let swipeX = 0, swipeY = 0, swiped = false;
+$('swipe').addEventListener('pointerdown', e => { swipeX = e.clientX; swipeY = e.clientY; swiped = false; });
+$('swipe').addEventListener('pointerup', e => {
+  const dx = e.clientX - swipeX, dy = e.clientY - swipeY;
+  if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  swiped = true;
+  go(addDays(sel, dx < 0 ? 1 : -1));
+});
+$('swipe').addEventListener('click', e => {
+  if (!swiped) return;
+  swiped = false;
+  e.stopPropagation();
+  e.preventDefault();
+}, true);
+
+document.addEventListener('keydown', e => {
+  if (view !== 'day' || sheet.open || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  if (e.key === 'ArrowLeft') go(addDays(sel, -1));
+  if (e.key === 'ArrowRight') go(addDays(sel, 1));
+});
+
 $('cols').addEventListener('click', e => {
   const tick = e.target.closest('[data-tick]');
   if (tick) return toggle(tick.dataset.date, tick.dataset.tick);
@@ -783,12 +1028,18 @@ $('cols').addEventListener('click', e => {
   const ppm = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ppm'));
   const m = Math.round(((e.clientY - day.getBoundingClientRect().top) / ppm + HOUR0 * 60) / 15) * 15;
   sel = day.dataset.date;
-  blockForm(sel, null, `${pad(Math.min(23, Math.floor(m / 60)))}:${pad(m % 60)}`);
+  blockForm(sel, null, fromMin(Math.min(m, 1380)));
 });
 $('head').addEventListener('click', e => {
   const b = e.target.closest('[data-sel]');
-  if (b) { sel = b.dataset.sel; render(); }
+  if (!b) return;
+  sel = b.dataset.sel;
+  setView('day');
 });
+$('prev').onclick = () => { sel = addDays(sel, -7); render(); };
+$('next').onclick = () => { sel = addDays(sel, 7); render(); };
+$('todayBtn').onclick = () => { sel = ymd(new Date()); render(); };
+
 $('bars').addEventListener('click', e => {
   const b = e.target.closest('[data-goal]');
   if (b) goalForm(cfg().goals.find(g => g.id === b.dataset.goal));
@@ -807,14 +1058,10 @@ $('widgetBtn').onclick = async () => {
     form({title: 'Виджет', fields: [{id: 'f-widget', key: 'widget', label: 'Выдели и скопируй', type: 'textarea', rows: 10, value: widgetCode()}], onSave: () => {}});
   }
 };
-$('prev').onclick = () => { sel = addDays(sel, -7); render(); };
-$('next').onclick = () => { sel = addDays(sel, 7); render(); };
-$('todayBtn').onclick = () => { sel = ymd(new Date()); render(); };
-$('add').onclick = () => blockForm(sel, null);
 function setScreen(delta) {
-  const d = dayDoc(sel);
+  const t = ymd(new Date()), d = dayDoc(t);
   d.screen = Math.max(0, (d.screen || 0) + delta);
-  putDay(sel, d);
+  putDay(t, d);
   render();
 }
 $('scrPlus').onclick = () => setScreen(.5);
@@ -841,11 +1088,15 @@ $('report').onclick = async () => {
 };
 document.querySelector('.tabs').addEventListener('click', e => {
   const b = e.target.closest('[data-go]');
-  if (!b) return;
-  $('app').dataset.active = b.dataset.go;
-  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-current', x === b));
-  scrollTo(0, 0);
+  if (b) setView(b.dataset.go);
 });
+
+// Таймер идёт каждую секунду, расписание обновляется раз в минуту и при смене блока
+setInterval(() => {
+  if (!heroNow) return;
+  if (hero().key !== heroKey && !sheet.open) render();
+  else paintTimer();
+}, 1000);
 setInterval(() => { if (!sheet.open) render(); }, 60000);
 
 /* Старт: копия с устройства, потом gist */
@@ -858,6 +1109,7 @@ async function start() {
     if (c) { S.plan = c.plan; S.days = c.days; S.settings = c.settings; dirty = c.dirty || {}; S.ready = true; }
   } catch {}
   render();
+  document.querySelector('#rows .now')?.scrollIntoView({block: 'center'});
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
   fetch('widget.js').then(r => r.text()).then(t => { widgetSrc = t; }).catch(() => {});
   if (!sync) {
