@@ -351,7 +351,18 @@ const S = {plan: {a: {items: []}, b: {items: []}}, days: {}, settings: null, rea
 let sel = ymd(new Date()), view = 'day', heroKey = '', centered = '', heroNow = null;
 
 // ?wall: страница работает обоями, панель задач перекрывает низ экрана
-if (new URLSearchParams(location.search).has('wall')) document.documentElement.style.setProperty('--taskbar', '48px');
+if (new URLSearchParams(location.search).has('wall')) {
+  document.documentElement.style.setProperty('--taskbar', '48px');
+  // Lively передаёт ввод в обои дважды: повтор того же события сразу за первым отбрасываем
+  const last = {};
+  const once = (stream, id, e) => {
+    const t = performance.now(), prev = last[stream];
+    last[stream] = {id, t};
+    if (prev && prev.id === id && t - prev.t < 60) { e.preventDefault(); e.stopImmediatePropagation(); }
+  };
+  addEventListener('beforeinput', e => once('input', `${e.inputType}:${e.data}`, e), true);
+  addEventListener('keydown', e => { if (!e.repeat) once('key', e.code, e); }, true);
+}
 
 const $ = id => document.getElementById(id);
 function pad(n) { return String(n).padStart(2, '0'); }
@@ -488,7 +499,8 @@ function selfCheck() {
   console.assert(plural(1, 'блок', 'блока', 'блоков') === 'блок' && plural(12, 'блок', 'блока', 'блоков') === 'блоков' && plural(3, 'блок', 'блока', 'блоков') === 'блока', 'plural');
   console.assert(timerText(65) === '01:05' && timerText(3725) === '1:02:05' && short('08:20') === '8:20', 'time');
   const fake = 'ghp_' + 'a'.repeat(36);
-  console.assert(cleanToken(fake + fake) === fake && cleanToken(` ${fake}\n`) === fake && cleanToken('abc') === 'abc', 'cleanToken');
+  const paired = [...fake].map(c => c + c).join('');
+  console.assert(cleanToken(fake + fake) === fake && cleanToken(paired) === fake && cleanToken(` ${fake}\n`) === fake && cleanToken('abc') === 'abc', 'cleanToken');
 }
 
 /* Данные живут в приватном gist. Правка сразу пишется на устройство, в gist уходит, когда есть связь. */
@@ -561,9 +573,11 @@ document.addEventListener('visibilitychange', () => (document.visibilityState ==
 addEventListener('online', syncNow);
 setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 60000);
 
-// В обоях Lively вставка может сработать дважды: берём из поля первый целый токен
+// В обоях Lively ввод задваивается целиком или по символам: восстанавливаем исходный токен
 function cleanToken(raw) {
-  const t = raw.replace(/\s/g, ''), m = t.match(/ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}/);
+  let t = raw.replace(/\s/g, '');
+  if (t.length % 2 === 0 && /^(?:(.)\1)+$/.test(t)) t = t.replace(/(.)\1/g, '$1');
+  const m = t.match(/ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}/);
   return m ? m[0] : t;
 }
 async function connect(token) {
